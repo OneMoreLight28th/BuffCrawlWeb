@@ -56,69 +56,66 @@
           </el-date-picker>
         </div>
       </div>
-
+      <el-backtop></el-backtop>
     </el-container>
-
     <el-main @scroll="handleScroll">
+      <div class="eltable">
+        <el-table
+            :data="productInfo"
+            style="width: 100%"
+            v-loading="loading">
 
-    <div class="eltable">
-          <el-table
-              :data="productInfo"
-              style="width: 100%"
-              v-loading="loading">
-            <!-- 表格列定义 -->
+          <el-table-column prop="name" label="饰品" width="400"></el-table-column>
 
-            <el-table-column prop="name" label="饰品" width="400"></el-table-column>
-            <el-table-column label="贴纸" width="500">
-              <template slot-scope="scope">
-                <div v-for="(sticker, index) in scope.row.stickers" :key="index" class="sticker-container">
-                  <img :src="'data:image/jpeg;base64,' + sticker.imgData.data"
-                       class="sticker-image"
-                       @mouseover="sticker.showName = true"
-                       @mouseout="sticker.showName = false">
-                  <div class="sticker-info">
-                    <span class="sticker-name">{{ sticker.name }}</span>
-                    <span class="sticker-wear">{{ Math.floor(100 - sticker.wear) }}%</span>
-                  </div>
+          <el-table-column label="贴纸" width="500">
+            <template slot-scope="scope">
+              <div v-for="(sticker, index) in scope.row.stickers" :key="index" class="sticker-container">
+                <img :src="'data:image/jpeg;base64,' + sticker.imgData.data"
+                     class="sticker-image"
+                     @mouseover="sticker.showName = true"
+                     @mouseout="sticker.showName = false">
+                <div class="sticker-info">
+                  <span class="sticker-name">{{ sticker.name }}</span>
+                  <span class="sticker-wear">{{ Math.round((1 - sticker.wear) * 10000) / 100 }}%</span>
                 </div>
-              </template>
-            </el-table-column>
+              </div>
+            </template>
+          </el-table-column>
 
-            <el-table-column prop="itemFloat" label="磨损" width="200"></el-table-column>
-            <el-table-column prop="paintSeed" label="模板" width="150"></el-table-column>
+          <el-table-column prop="itemFloat" label="磨损" width="200"></el-table-column>
 
-            <el-table-column prop="inspectionImg" label="检视图" width="150">
-              <template slot-scope="scope">
-                <el-image :src="'data:image/jpeg;base64,' + scope.row.inspectionImg.data"
-                          :preview-src-list="[ 'data:image/jpeg;base64,' + scope.row.inspectionImg.data ]">
-                  <div slot="placeholder" class="image-slot">
-                    <img :src="'data:image/jpeg;base64,' + scope.row.inspectionImg.data" width="100" height="100">
-                  </div>
-                </el-image>
-              </template>
-            </el-table-column>
+          <el-table-column prop="paintSeed" label="模板" width="150"></el-table-column>
 
-            <el-table-column prop="price" label="价格" width="150"></el-table-column>
-            <el-table-column label="交易时间" width="200">
-              <template slot-scope="scope">
-                {{ scope.row.transactionTime.slice(0, 10) }}
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
+          <el-table-column prop="inspectionImg" label="检视图" width="150">
+            <template slot-scope="scope">
+              <el-image :src="'data:image/jpeg;base64,' + scope.row.inspectionImg.data"
+                        :preview-src-list="[ 'data:image/jpeg;base64,' + scope.row.inspectionImg.data ]">
+                <div slot="placeholder" class="image-slot">
+                  <img :src="'data:image/jpeg;base64,' + scope.row.inspectionImg.data" width="100" height="100">
+                </div>
+              </el-image>
+            </template>
+          </el-table-column>
+
+          <el-table-column prop="price" label="价格" width="150"></el-table-column>
+
+          <el-table-column label="交易时间" width="200">
+            <template slot-scope="scope">
+              {{ scope.row.transactionTime.slice(0, 10) }}
+            </template>
+          </el-table-column>
+
+        </el-table>
+      </div>
       <div v-if="hasMore" class="load-more-container">
         <el-button @click="loadMoreData" type="primary">加载更多</el-button>
       </div>
     </el-main>
   </div>
-
-
-
 </template>
 
 <script>
 import axios from "axios";
-
 
 
 export default {

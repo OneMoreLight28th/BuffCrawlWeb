@@ -174,7 +174,7 @@ export default {
       pageSize: 24,
       currentPage: 1,
       totalItems: 0,
-      loading :false,
+      loading: false,
     };
 
   },
@@ -205,25 +205,25 @@ export default {
 
     // axios请求
     fetchData() {
-      this.loading=true;
-      axios.get("http://localhost:8081/api/getItemData", {
-        params: {
-          page: this.currentPage,
-          pageSize: this.pageSize,
-        }
-      })
+      this.loading = true;
+      axios
+          .get('http://localhost:8081/api/getItemData', {
+            params: {
+              page: this.currentPage,
+              pageSize: this.pageSize,
+            },
+          })
           .then(response => {
             this.itemList = response.data.items;
             this.totalItems = response.data.totalItems;
-
-            this.loading=false;
+            this.loading = false;
           })
           .catch(error => {
-            console.log(error)
-
-            this.loading=false;
-          })
+            console.log(error);
+            this.loading = false;
+          });
     },
+
     updateSearchKey(key) {
       this.searchKey = key;
       this.currentPage = 1;
@@ -231,27 +231,18 @@ export default {
     },
     searchData() {
       this.loading = true;
-      axios.get("http://localhost:8081/api/search",{
-        params: {
-          page: this.currentPage,
-          pageSize: this.pageSize,
-          searchKey: this.searchKey
-        }
-      })
+      axios
+          .get('http://localhost:8081/api/search', {
+            params: {
+              page: this.currentPage,
+              pageSize: this.pageSize,
+              searchKey: this.searchKey,
+            },
+          })
           .then(response => {
-            // 将获取到的数据赋值给表格数据
             this.itemList = response.data.items;
-            // 更新分页总数
             this.totalItems = response.data.totalItems;
             this.loading = false;
-            // 更新 URL 中的 page 参数
-            this.$router.push({ query: { ...this.$route.query, page: this.currentPage } })
-                .catch(err => {
-                  if (err.name !== 'NavigationDuplicated') {
-                    // 如果不是重复导航的错误，就抛出错误
-                    throw err;
-                  }
-                });
           })
           .catch(error => {
             console.log(error);
@@ -260,27 +251,33 @@ export default {
     },
 
     handlePageChange(page) {
-      //置顶
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      // 更新当前页码
+      // 更新当前页并获取相应的数据
       this.currentPage = page;
-      // 如果搜索关键字不为空，获取对应页的搜索结果
-      if (this.searchKey) {
-        this.searchData();
-      } else {
-        // 获取对应页的全部数据
-        this.fetchData();
-      }
+      this.$router
+          .push({
+            query: { ...this.$route.query, page: this.currentPage },
+          })
+          .then(() => {
+            // 在 URL 更新完成后滚动到页面顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          })
+          .catch(err => {
+            if (err.name !== 'NavigationDuplicated') {
+              // 如果不是重复导航的错误，就抛出错误
+              throw err;
+            }
+          });
     },
   },
 
   watch: {
-    $route: function(to, from) {
+    $route: function (to, from) {
+      // 监听路由的变化（例如搜索关键字或页码变化）
       this.searchKey = to.query.searchKey || '';
-      this.currentPage = 1;
+      this.currentPage = Number(to.query.page) || 1;
       this.searchData();
-    }
-  }
+    },
+  },
 };
 </script>
 
