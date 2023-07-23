@@ -7,7 +7,7 @@
           <el-menu-item index="/Skin" @select="menuClick">首页</el-menu-item>
           <el-menu-item><a href="https://github.com/OneMoreLight28th" target="_blank">反馈</a></el-menu-item>
           <div class="search-container">
-            <el-input v-model="input" placeholder="输入物品名称"></el-input>
+            <el-input v-model="input" placeholder="输入物品名称" @keyup.native.enter="search"></el-input>
             <el-button type="primary" icon="el-icon-search" @click="search" class="search-button">
               搜索
             </el-button>
@@ -47,8 +47,7 @@ export default {
       this.$router.push(index);
     },
     search() {
-      console.log("Search method called!");
-      this.$router.push({path: '/skin', query: {searchKey: this.input}});
+      this.$router.replace({ path: '/skin', query: { searchKey: this.input } });
     }
   },
 }

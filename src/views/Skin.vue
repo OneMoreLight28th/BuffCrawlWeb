@@ -116,7 +116,7 @@
     <!-- 内容   -->
     <el-col
         :align="'top'"
-        span="3"
+        :span="3"
         v-for="(o, index) in itemList"
         :key="o.id"
         :offset="index > 0 ? 1 : 0"
@@ -162,6 +162,7 @@ export default {
   mounted() {
     this.searchKey = this.$route.query.searchKey || '';
     window.addEventListener('scroll', this.handleScroll);
+    this.handleRouteChange(this.$route);
   },
   beforeDestroy() {
     window.removeEventListener('scroll', this.handleScroll);
@@ -176,67 +177,19 @@ export default {
       totalItems: 0,
       loading: false,
     };
-
-  },
-
-  created() {
-    this.searchKey = this.$route.query.searchKey || '';
-    this.fetchData();
   },
 
   methods: {
-    // 菜单跟随滑动
-    handleScroll() {
-      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-      const menuEl = this.$refs.menu.$el;
-      if (scrollTop > 0) {
-        menuEl.style.position = 'fixed';
-        menuEl.style.top = '0';
-      } else {
-        menuEl.style.position = 'static';
-      }
-    },
-    handleOpen(key, keyPath) {
-      console.log(key, keyPath);
-    },
-    handleClose(key, keyPath) {
-      console.log(key, keyPath);
-    },
 
-    // axios请求
-    fetchData() {
+    fetchDataOrSearchData(searchKey = null) {
       this.loading = true;
+      const url = searchKey ? 'http://localhost:8081/api/search' : 'http://localhost:8081/api/getItemData';
       axios
-          .get('http://localhost:8081/api/getItemData', {
+          .get(url, {
             params: {
               page: this.currentPage,
               pageSize: this.pageSize,
-            },
-          })
-          .then(response => {
-            this.itemList = response.data.items;
-            this.totalItems = response.data.totalItems;
-            this.loading = false;
-          })
-          .catch(error => {
-            console.log(error);
-            this.loading = false;
-          });
-    },
-
-    updateSearchKey(key) {
-      this.searchKey = key;
-      this.currentPage = 1;
-      this.searchData();
-    },
-    searchData() {
-      this.loading = true;
-      axios
-          .get('http://localhost:8081/api/search', {
-            params: {
-              page: this.currentPage,
-              pageSize: this.pageSize,
-              searchKey: this.searchKey,
+              searchKey: searchKey || this.searchKey,
             },
           })
           .then(response => {
@@ -251,35 +204,36 @@ export default {
     },
 
     handlePageChange(page) {
-      // 更新当前页并获取相应的数据
       this.currentPage = page;
-      this.$router
-          .push({
-            query: { ...this.$route.query, page: this.currentPage },
-          })
+      this.$router.push({ query: { ...this.$route.query, page: this.currentPage } })
           .then(() => {
-            // 在 URL 更新完成后滚动到页面顶部
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Call fetchDataOrSearchData with the searchKey to decide the type of request
+            this.fetchDataOrSearchData(this.searchKey);
           })
           .catch(err => {
             if (err.name !== 'NavigationDuplicated') {
-              // 如果不是重复导航的错误，就抛出错误
               throw err;
             }
           });
     },
+
+    handleRouteChange(to) {
+      this.searchKey = to.query.searchKey || '';
+      this.currentPage = Number(to.query.page) || 1;
+      this.fetchDataOrSearchData(this.searchKey);
+    },
   },
 
   watch: {
-    $route: function (to, from) {
-      // 监听路由的变化（例如搜索关键字或页码变化）
-      this.searchKey = to.query.searchKey || '';
-      this.currentPage = Number(to.query.page) || 1;
-      this.searchData();
+    $route(to, from) {
+      this.handleRouteChange(to);
     },
   },
 };
 </script>
+
+
 
 
 <style scoped>
