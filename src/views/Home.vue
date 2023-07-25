@@ -12,9 +12,45 @@
               搜索
             </el-button>
           </div>
+          <!--头像-->
+          <div class="avatar-container" @click="handleAvatarClick" @mouseover="isAvatarHovered = true"
+               @mouseleave="isAvatarHovered = false">
+            <el-avatar icon="el-icon-user-solid" :class="{ 'avatar-hover': isAvatarHovered }"></el-avatar>
+          </div>
         </el-menu>
         <div class="line"></div>
       </el-header>
+      <el-dialog :visible.sync="showUserInfoDialog" title="用户登录" @close="handleUserInfoDialogClose" :width="dialogWidth">
+        <!-- 用户登录表单 -->
+        <el-form ref="loginForm" :model="loginForm" :rules="loginFormRules">
+          <el-form-item label="用户名" prop="userId">
+            <el-input v-model="loginForm.userId"></el-input>
+          </el-form-item>
+          <el-form-item label="密码" prop="userPwd">
+            <el-input v-model="loginForm.userPwd" type="password"></el-input>
+          </el-form-item>
+          <!-- 其他登录字段... -->
+        </el-form>
+        <el-button slot="footer" type="primary" @click="handleLogin">登录</el-button>
+        <el-button slot="footer" @click="handleRegister">注册</el-button>
+      </el-dialog>
+
+      <!-- 用户注册弹窗 -->
+      <el-dialog :visible.sync="showRegisterDialog" title="用户注册" @close="handleRegisterDialogClose" :width="dialogWidth">
+        <!-- 用户注册表单 -->
+        <el-form ref="registerForm" :model="registerForm" :rules="registerFormRules">
+          <el-form-item label="用户名" prop="userId">
+            <el-input v-model="registerForm.userId"></el-input>
+          </el-form-item>
+          <el-form-item label="密码" prop="userPwd">
+            <el-input v-model="registerForm.userPwd" type="password"></el-input>
+          </el-form-item>
+          <!-- 其他注册字段... -->
+        </el-form>
+        <el-button slot="footer" type="primary" @click="handleRegisterSubmit">注册</el-button>
+        <el-button slot="footer" @click="showRegisterDialog = false">取消</el-button>
+      </el-dialog>
+
 
       <el-main>
         <router-view/>
@@ -29,32 +65,138 @@
 </template>
 
 <script>
+import axios from "axios";
+import {generateUUID} from '../Utils/uuid';
 
 export default {
   name: "Home",
 
   data() {
     return {
-
+      dialogWidth: '400px',
+      showUserInfoDialog: false,   // 控制用户登录弹窗的显示状态
+      showRegisterDialog: false,   // 控制用户注册弹窗的显示状态
+      isAvatarHovered: false,      // 头像是否处于hover状态
+      loginForm: {
+        userId: '',
+        userPwd: '',
+      },
+      loginFormRules: {
+        userId: [{required: true, message: '请输入用户名', trigger: 'blur'}],
+        userPwd: [{required: true, message: '请输入密码', trigger: 'blur'}],
+      },
+      registerForm: {
+        userId: '',
+        userPwd: '',
+      },
+      registerFormRules: {
+        userId: [{required: true, message: '请输入用户名', trigger: 'blur'}],
+        userPwd: [{required: true, message: '请输入密码', trigger: 'blur'}],
+      },
       input: '',
       activeIndex: '/Skin',
       activeIndex2: '/Content',
     }
   },
   methods: {
+    handleRegister() {
+      // 打开用户注册弹窗
+      this.showRegisterDialog = true;
+    },
+    handleRegisterDialogClose() {
+      // 处理注册弹窗关闭事件的逻辑
+      this.showRegisterDialog = false;
+    },
+    // 前端代码示例，生成UUID并保存用户
+
+    handleRegisterSubmit() {
+      // 检查是否输入了有效的用户名和密码以及其他必要的注册信息
+      if (!this.registerForm.userId || !this.registerForm.userPwd) {
+        this.$message.error("请输入完整的注册信息");
+        return;
+      }
+
+      // 将响应式对象转换为普通JSON对象
+      const requestData = JSON.parse(JSON.stringify(this.registerForm));
+
+      // 发送注册请求，根据后端返回的结果进行处理
+      axios.post("http://localhost:8081/api/users/register", requestData)
+          .then(response => {
+            // 注册成功处理
+            this.$message.success(response.data);
+            this.showRegisterDialog = false;
+          })
+          .catch(error => {
+            // 注册失败处理
+            this.$message.error("注册失败：" + error.message);
+          });
+    },
+
+
+
+    handleLogin() {
+      // 检查是否输入了有效的用户名和密码
+      if (!this.loginForm.userId || !this.loginForm.userPwd) {
+        this.$message.error("请输入用户名和密码");
+        return;
+      }
+
+      // 将响应式对象转换为普通JSON对象
+      const requestData = JSON.parse(JSON.stringify(this.loginForm));
+
+      // 发送登录请求，根据后端返回的结果进行处理
+      axios.post("http://localhost:8081/api/users/login", requestData)
+          .then(response => {
+            console.log(requestData);
+            // 登录成功处理
+            this.$message.success(response.data);
+            this.showUserInfoDialog = false;
+            console.log(response.data);
+          })
+          .catch(error => {
+            // console.log(requestData);
+            this.$message.error("登录失败：没有此账号" );
+          });
+    },
+
+
+
+    handleAvatarClick() {
+      // 点击头像时，显示用户信息弹窗
+      this.showUserInfoDialog = true;
+    },
+
+    handleUserInfoDialogClose() {
+      // 用户信息弹窗关闭时，重置弹窗的显示状态
+      this.showUserInfoDialog = false;
+    },
 
     menuClick(index) {
       this.$router.push(index);
-    },
-    search() {
-      this.$router.replace({ path: '/skin', query: { searchKey: this.input } });
     }
-  },
+    ,
+    search() {
+      this.$router.replace({path: '/skin', query: {searchKey: this.input}});
+    }
+  }
 }
 </script>
 
 
 <style scoped>
+
+.avatar-container {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.avatar-hover {
+  border: 2px solid #409EFF;
+  border-radius: 50%;
+  transition: border-color 0.3s;
+}
+
 
 .el-header, .el-footer {
   color: #333;
@@ -82,7 +224,7 @@ export default {
 }
 
 .search-container {
-  margin-left: auto;
+  margin-left: 10px;
   display: flex;
   align-items: center;
 }
@@ -90,5 +232,12 @@ export default {
 .search-button {
   margin-left: 10px;
 }
+
+.avatar-container {
+  display: flex;
+  margin-left: auto;
+  align-items: center;
+}
+
 
 </style>
