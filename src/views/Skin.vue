@@ -205,10 +205,9 @@ export default {
 
     handlePageChange(page) {
       this.currentPage = page;
-      this.$router.push({ query: { ...this.$route.query, page: this.currentPage } })
+      this.$router.push({query: {...this.$route.query, page: this.currentPage}})
           .then(() => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            // Call fetchDataOrSearchData with the searchKey to decide the type of request
+            window.scrollTo({top: 0, behavior: 'smooth'});
             this.fetchDataOrSearchData(this.searchKey);
           })
           .catch(err => {
@@ -232,8 +231,6 @@ export default {
   },
 };
 </script>
-
-
 
 
 <style scoped>

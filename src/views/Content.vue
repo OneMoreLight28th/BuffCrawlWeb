@@ -43,20 +43,17 @@
       </el-row>
 
 
-      <div class="date-picker">
-        <div class="block">
-          <el-date-picker
-              v-model="value2"
-              type="datetimerange"
-              :picker-options="pickerOptions"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              align="right"
-              value-format="yyyy-MM-dd"
-          >
-          </el-date-picker>
-        </div>
+      <div class="block">
+        <el-date-picker
+            v-model="value2"
+            type="daterange"
+            align="right"
+            unlink-panels
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            :picker-options="pickerOptions">
+        </el-date-picker>
       </div>
       <el-backtop></el-backtop>
     </el-container>
@@ -203,7 +200,7 @@ export default {
           }
         }]
       },
-      value1: [new Date(2000, 10, 10, 10, 10), new Date(2000, 10, 11, 10, 10)],
+      value1: '',
       value2: ''
     };
 
