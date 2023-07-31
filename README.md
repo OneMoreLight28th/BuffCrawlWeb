@@ -9,12 +9,12 @@
 npm install
 ```
 
-### 编译和热重载以进行开发
+### 编译运行
 ```
 npm run serve
 ```
 
-### 编译并压缩用于生产
+### 项目打包
 ```
 npm run build
 ```
