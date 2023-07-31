@@ -8,8 +8,6 @@
             default-active="1"
             :collapse-transition="true"
             class="el-menu-vertical-demo"
-            @open="handleOpen"
-            @close="handleClose"
             :unique-opened="true"
         >
 
@@ -25,11 +23,10 @@
               <el-menu-item index="1-4" @click="updateSearchKey('AK-47')">AK-47</el-menu-item>
               <el-menu-item index="1-5" @click="updateSearchKey('法玛斯')">法玛斯</el-menu-item>
               <el-menu-item index="1-6" @click="updateSearchKey('M4A4')">M4A4</el-menu-item>
-              <el-menu-item index="1-7" @click="updateSearchKey('M4A1 消音版')">M4A1 消音版</el-menu-item>
+              <el-menu-item index="1-7" @click="updateSearchKey('M4A1')">M4A1 消音版</el-menu-item>
               <el-menu-item index="1-8" @click="updateSearchKey('SG 553')">SG 553</el-menu-item>
               <el-menu-item index="1-9" @click="updateSearchKey('SSG 08')">SSG 08</el-menu-item>
               <el-menu-item index="1-10" @click="updateSearchKey('AUG')">AUG</el-menu-item>
-              <el-menu-item index="1-11" @click="updateSearchKey('G3SG1')">G3SG1</el-menu-item>
             </el-menu-item-group>
           </el-submenu>
           <el-submenu index="2">
@@ -43,7 +40,7 @@
               <el-menu-item index="2-3" @click="updateSearchKey('格洛克 18 型')">格洛克 18 型</el-menu-item>
               <el-menu-item index="2-4" @click="updateSearchKey('P250')">P250</el-menu-item>
               <el-menu-item index="2-5" @click="updateSearchKey('FN57')">FN57</el-menu-item>
-              <el-menu-item index="2-6" @click="updateSearchKey('CZ75 自动手枪')">CZ75 自动手枪</el-menu-item>
+              <el-menu-item index="2-6" @click="updateSearchKey('CZ75')">CZ75 自动手枪</el-menu-item>
               <el-menu-item index="2-7" @click="updateSearchKey('Tec-9')">Tec-9</el-menu-item>
               <el-menu-item index="2-8" @click="updateSearchKey('R8 左轮手枪')">R8 左轮手枪</el-menu-item>
               <el-menu-item index="2-9" @click="updateSearchKey('沙漠之鹰')">沙漠之鹰</el-menu-item>
@@ -86,13 +83,12 @@
             <el-menu-item-group>
               <el-menu-item index="4-1" @click="updateSearchKey('血猎手套')">血猎手套</el-menu-item>
               <el-menu-item index="4-2" @click="updateSearchKey('驾驶手套')">驾驶手套</el-menu-item>
-              <el-menu-item index="4-3" @click="updateSearchKey('手部束带')">手部束带</el-menu-item>
+              <el-menu-item index="4-3" @click="updateSearchKey('裹手')">手部束带</el-menu-item>
               <el-menu-item index="4-4" @click="updateSearchKey('摩托手套')">摩托手套</el-menu-item>
               <el-menu-item index="4-5" @click="updateSearchKey('专业手套')">专业手套</el-menu-item>
               <el-menu-item index="4-6" @click="updateSearchKey('运动手套')">运动手套</el-menu-item>
               <el-menu-item index="4-7" @click="updateSearchKey('九头蛇手套')">九头蛇手套</el-menu-item>
-              <el-menu-item index="4-7" @click="updateSearchKey('狂牙手套')">狂牙手套</el-menu-item>
-
+              <el-menu-item index="4-8" @click="updateSearchKey('狂牙手套')">狂牙手套</el-menu-item>
             </el-menu-item-group>
           </el-submenu>
           <el-submenu index="5">
@@ -180,6 +176,24 @@ export default {
   },
 
   methods: {
+    updateSearchKey(newSearchKey) {
+      // 检查是否和当前路由的搜索参数一致，避免重复导航
+      if (this.$route.query.searchKey === newSearchKey && this.$route.query.page === '1') {
+        return;
+      }
+
+      this.searchKey = newSearchKey;
+      this.currentPage = 1;
+      this.fetchDataOrSearchData(this.searchKey);
+
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          page: this.currentPage,
+          searchKey: this.searchKey,
+        },
+      });
+    },
 
     fetchDataOrSearchData(searchKey = null) {
       this.loading = true;
@@ -223,6 +237,7 @@ export default {
       this.fetchDataOrSearchData(this.searchKey);
     },
   },
+
 
   watch: {
     $route(to, from) {

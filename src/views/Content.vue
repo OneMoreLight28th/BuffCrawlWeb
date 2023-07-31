@@ -55,8 +55,11 @@
             :picker-options="pickerOptions">
         </el-date-picker>
       </div>
+
       <el-backtop></el-backtop>
+
     </el-container>
+
     <el-main @scroll="handleScroll">
       <div class="eltable">
         <el-table
@@ -115,6 +118,8 @@
 
 <script>
 import axios from "axios";
+import {mapState} from "vuex";
+import {MessageBox} from "element-ui";
 
 
 export default {
@@ -203,8 +208,12 @@ export default {
       value1: '',
       value2: ''
     };
-
   },
+
+  computed: {
+    ...mapState(['loggedIn'])
+  },
+
   mounted() {
     // 调用getData方法
     this.getProductInfo()
@@ -223,7 +232,6 @@ export default {
         this.getProductInfo();
       }
     },
-
 
     handleClose(done) {
       done();
@@ -260,8 +268,17 @@ export default {
 
     loadMoreData() {
       if (this.hasMore) {
-        this.currentPage += 1;
-        this.getProductInfo();
+        if (this.$store.state.loggedIn) {
+          this.currentPage += 1;
+          this.getProductInfo();
+        } else {
+          // 显示登录对话框
+          console.log(this.$store.state.loggedIn)
+          MessageBox.alert("请先登录", "提示", {
+            confirmButtonText: "确定",
+            type: "warning",
+          })
+        }
       }
     },
   },

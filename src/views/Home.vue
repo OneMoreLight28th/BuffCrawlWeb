@@ -12,14 +12,19 @@
               搜索
             </el-button>
           </div>
+
+
           <!--头像-->
           <div class="avatar-container" @click="handleAvatarClick" @mouseover="isAvatarHovered = true"
                @mouseleave="isAvatarHovered = false">
             <el-avatar icon="el-icon-user-solid" :class="{ 'avatar-hover': isAvatarHovered }"></el-avatar>
+            <span v-if="loggedIn" class="username">{{ userId }}</span>
           </div>
         </el-menu>
         <div class="line"></div>
       </el-header>
+
+
       <el-dialog :visible.sync="showUserInfoDialog" title="用户登录" @close="handleUserInfoDialogClose" :width="dialogWidth">
         <!-- 用户登录表单 -->
         <el-form ref="loginForm" :model="loginForm" :rules="loginFormRules">
@@ -33,6 +38,7 @@
         </el-form>
         <el-button slot="footer" type="primary" @click="handleLogin">登录</el-button>
         <el-button slot="footer" @click="handleRegister">注册</el-button>
+
       </el-dialog>
 
       <!-- 用户注册弹窗 -->
@@ -66,7 +72,8 @@
 
 <script>
 import axios from "axios";
-import {generateUUID} from '../Utils/uuid';
+import { mapState , mapMutations } from "vuex";
+
 
 export default {
   name: "Home",
@@ -98,7 +105,20 @@ export default {
       activeIndex2: '/Content',
     }
   },
+
+  computed: {
+    ...mapState(["loggedIn"]),
+  },
+
+
+
   methods: {
+
+    handleUserInfoDialogClose() {
+      // 用户信息弹窗关闭时，重置弹窗的显示状态
+      this.showUserInfoDialog = false;
+    },
+
     handleRegister() {
       // 打开用户注册弹窗
       this.showRegisterDialog = true;
@@ -107,7 +127,6 @@ export default {
       // 处理注册弹窗关闭事件的逻辑
       this.showRegisterDialog = false;
     },
-    // 前端代码示例，生成UUID并保存用户
 
     handleRegisterSubmit() {
       // 检查是否输入了有效的用户名和密码以及其他必要的注册信息
@@ -128,12 +147,11 @@ export default {
           })
           .catch(error => {
             // 注册失败处理
-            this.$message.error("注册失败：" + error.message);
+            this.$message.error("注册失败：" + error.response.data);
           });
     },
 
-
-
+    ...mapMutations(['setLoggedIn']),
     handleLogin() {
       // 检查是否输入了有效的用户名和密码
       if (!this.loginForm.userId || !this.loginForm.userPwd) {
@@ -147,15 +165,28 @@ export default {
       // 发送登录请求，根据后端返回的结果进行处理
       axios.post("http://localhost:8081/api/users/login", requestData)
           .then(response => {
-            console.log(requestData);
-            // 登录成功处理
+
             this.$message.success(response.data);
             this.showUserInfoDialog = false;
-            console.log(response.data);
+
+            // 使用 Vuex 提交 mutation 将 loggedIn 设置为 true
+            this.setLoggedIn(true);
+
+            this.userId = this.loginForm.userId; // 保存用户ID，以便显示在页面上
+
+            if (this.$router.currentRoute.path !== '/Skin') {
+              this.$router.push('/Skin');
+            }
+
           })
           .catch(error => {
-            // console.log(requestData);
-            this.$message.error("登录失败：没有此账号" );
+            if (error.response) {
+              if (error.response.status === 401) {
+                this.$message.error(error.response.data);
+              } else {
+                this.$message.error("登录失败：未知错误");
+              }
+            }
           });
     },
 
@@ -166,18 +197,16 @@ export default {
       this.showUserInfoDialog = true;
     },
 
-    handleUserInfoDialogClose() {
-      // 用户信息弹窗关闭时，重置弹窗的显示状态
-      this.showUserInfoDialog = false;
-    },
 
     menuClick(index) {
       this.$router.push(index);
-    }
-    ,
+    },
+
+
     search() {
       this.$router.replace({path: '/skin', query: {searchKey: this.input}});
-    }
+    },
+
   }
 }
 </script>
@@ -185,10 +214,18 @@ export default {
 
 <style scoped>
 
+.username {
+  font-family: 'Arial', sans-serif; /* Example font family */
+  font-size: 18px; /* Example font size */
+  font-weight: bold; /* Example font weight */
+
+}
+
 .avatar-container {
   position: relative;
   display: inline-block;
   cursor: pointer;
+  right: 100px;
 }
 
 .avatar-hover {
